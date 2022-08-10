@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const asyncHandler = require('express-async-handler');
-const User = require('../models/userModel');
+const User = require('../model/userModel');
 
 // @desc    Register new user
 // @route   POST /api/users
@@ -55,6 +55,8 @@ const loginUser = asyncHandler(async (req, res) => {
 	// Check for user email
 	const user = await User.findOne({ email });
 
+	//password viene a ser lo que vino en la req y user.password
+	//es lo que mongo devolvio al buscar User
 	if (user && (await bcrypt.compare(password, user.password))) {
 		res.json({
 			_id: user.id,
@@ -72,7 +74,12 @@ const loginUser = asyncHandler(async (req, res) => {
 // @route   GET /api/users/me
 // @access  Private
 const getMe = asyncHandler(async (req, res) => {
-	res.status(200).json(req.user);
+	const { _id, name, email } = await User.findById(req.user.id);
+	res.status(200).json({
+		id: _id,
+		name,
+		email,
+	});
 });
 
 // Generate JWT
